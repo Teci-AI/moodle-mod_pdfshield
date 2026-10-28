@@ -1,0 +1,36 @@
+# Every push and pull request: PHP syntax on every supported PHP version, and a test build of the zip.
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.1', '8.2', '8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v6
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: none
+      - run: find . -name '*.php' -not -path './build/*' -print0 | xargs -0 -n1 php -l > /dev/null
+
+  build:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: none
+      - run: bash bin/build.sh
+      - uses: actions/upload-artifact@v6
+        with:
+          name: mod_pdfshield-zip
+          path: build/*.zip

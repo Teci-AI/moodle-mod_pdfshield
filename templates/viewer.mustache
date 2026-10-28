@@ -1,0 +1,76 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_pdfshield/viewer
+
+    The document viewer: toolbar and pages, drawn by amd/src/viewer.js. No download, print or open control.
+
+    Context variables required for this template:
+    * search - whether the find box is shown
+    * images - whether pages are shown as images
+
+    Example context (json):
+    {
+        "search": true,
+        "images": false
+    }
+}}
+<div class="mod-pdfshield-viewer" data-region="pdfshield">
+    <div class="mod-pdfshield-toolbar" role="toolbar" aria-label="{{#str}}toolbar, mod_pdfshield{{/str}}">
+        <div class="mod-pdfshield-group">
+            <button type="button" class="btn btn-icon" data-action="previous" title="{{#str}}previouspage, mod_pdfshield{{/str}}"
+                    aria-label="{{#str}}previouspage, mod_pdfshield{{/str}}" disabled>{{#pix}}t/left, core{{/pix}}</button>
+            <label class="mod-pdfshield-pagelabel mb-0">
+                <span class="visually-hidden sr-only">{{#str}}page, mod_pdfshield{{/str}}</span>
+                <input type="number" class="form-control form-control-sm" data-region="pagenumber" min="1" value="1"
+                       inputmode="numeric" disabled>
+            </label>
+            <span data-region="pagetotal" class="text-nowrap"></span>
+            <button type="button" class="btn btn-icon" data-action="next" title="{{#str}}nextpage, mod_pdfshield{{/str}}"
+                    aria-label="{{#str}}nextpage, mod_pdfshield{{/str}}" disabled>{{#pix}}t/right, core{{/pix}}</button>
+        </div>
+        <div class="mod-pdfshield-group">
+            <button type="button" class="btn btn-icon" data-action="zoomout" title="{{#str}}zoomout, mod_pdfshield{{/str}}"
+                    aria-label="{{#str}}zoomout, mod_pdfshield{{/str}}">{{#pix}}t/less, core{{/pix}}</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-action="zoomfit" data-region="zoomlevel"
+                    title="{{#str}}zoomfit, mod_pdfshield{{/str}}">100%</button>
+            <button type="button" class="btn btn-icon" data-action="zoomin" title="{{#str}}zoomin, mod_pdfshield{{/str}}"
+                    aria-label="{{#str}}zoomin, mod_pdfshield{{/str}}">{{#pix}}t/add, core{{/pix}}</button>
+            <button type="button" class="btn btn-icon" data-action="fullscreen" title="{{#str}}fullscreen, mod_pdfshield{{/str}}"
+                    aria-label="{{#str}}fullscreen, mod_pdfshield{{/str}}">{{#pix}}e/fullscreen, core{{/pix}}</button>
+        </div>
+        {{#search}}
+        <form class="mod-pdfshield-group mod-pdfshield-search" data-region="searchform" role="search">
+            <label class="mb-0">
+                <span class="visually-hidden sr-only">{{#str}}search, mod_pdfshield{{/str}}</span>
+                <input type="search" class="form-control form-control-sm" data-region="searchinput"
+                       placeholder="{{#str}}search, mod_pdfshield{{/str}}">
+            </label>
+            <button type="button" class="btn btn-icon" data-action="previousmatch" title="{{#str}}previousmatch, mod_pdfshield{{/str}}"
+                    aria-label="{{#str}}previousmatch, mod_pdfshield{{/str}}">{{#pix}}t/up, core{{/pix}}</button>
+            <button type="button" class="btn btn-icon" data-action="nextmatch" title="{{#str}}nextmatch, mod_pdfshield{{/str}}"
+                    aria-label="{{#str}}nextmatch, mod_pdfshield{{/str}}">{{#pix}}t/down, core{{/pix}}</button>
+            <span class="small text-nowrap" data-region="searchstatus"></span>
+        </form>
+        {{/search}}
+    </div>
+    <div class="mod-pdfshield-pages" data-region="pages" tabindex="0" aria-label="{{#str}}pages, mod_pdfshield{{/str}}"
+         aria-busy="true">
+        <p class="mod-pdfshield-status" data-region="status" role="status">{{#str}}loading, mod_pdfshield{{/str}}</p>
+    </div>
+    <p class="mod-pdfshield-noprint">{{#str}}noprint, mod_pdfshield{{/str}}</p>
+</div>

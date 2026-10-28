@@ -1,0 +1,14 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+.claude/
+.mcp.json
+.env
+
+# Release builds
+*.zip
+/build/
+node_modules/

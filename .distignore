@@ -1,0 +1,13 @@
+# Not shipped in the plugin zip (read by bin/build.sh).
+/.git
+/.github
+/.gitignore
+/.gitattributes
+/.distignore
+/bin
+/build
+/node_modules
+*.zip
+.DS_Store
+Thumbs.db
+desktop.ini

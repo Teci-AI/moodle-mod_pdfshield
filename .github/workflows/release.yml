@@ -1,0 +1,26 @@
+# Publishing a GitHub release (tag v1.0.1) builds the zip and attaches it to the release. Raise $plugin->version in
+# version.php before tagging. The zip is what goes to the moodle.org plugins directory (uploaded there by hand).
+name: Release
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: none
+      - id: build
+        run: echo "zip=$(bash bin/build.sh "${{ github.event.release.tag_name }}" | tail -1)" >> "$GITHUB_OUTPUT"
+      - name: Attach the zip to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" "${{ steps.build.outputs.zip }}" --clobber

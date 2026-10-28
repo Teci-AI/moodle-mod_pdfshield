@@ -70,8 +70,9 @@ class mod_pdfshield_mod_form extends moodleform_mod {
     }
 
     /**
-     * A protection checkbox: the site default for a new activity; fixed to the site value when the administrator
-     * locked it; off and fixed when it cannot work on this site.
+     * A protection checkbox, the site default for a new activity. When teachers cannot change it (locked by the
+     * administrator, or page images without Ghostscript), it shows the activity's own value, fixed, with a note
+     * saying what applies meanwhile; saving keeps that own value (pdfshield_update_instance).
      *
      * @param string $name watermark or pageimages
      * @param bool $available
@@ -80,16 +81,16 @@ class mod_pdfshield_mod_form extends moodleform_mod {
         $mform = $this->_form;
         $mform->addElement('advcheckbox', $name, get_string($name, 'mod_pdfshield'));
         $mform->addHelpButton($name, $name, 'mod_pdfshield');
-        $mform->setDefault($name, (int) get_config('mod_pdfshield', $name));
+        $sitevalue = (int) get_config('mod_pdfshield', $name);
+        $mform->setDefault($name, $sitevalue);
         if (!$available || shield::locked($name)) {
-            // Shown fixed; saving keeps the activity's own value (pdfshield_update_instance).
-            $mform->setConstant($name, $available ? (int) get_config('mod_pdfshield', $name) : 0);
+            $own = !empty($this->current->instance) ? (int) !empty($this->current->$name) : $sitevalue;
+            $mform->setConstant($name, $own);
             $mform->freeze($name);
-            $note = get_string($available ? 'setbysite' : 'pageimagesunavailable', 'mod_pdfshield');
-            if (!empty($this->current->instance)) {
-                $own = get_string(empty($this->current->$name) ? 'settingoff' : 'settingon', 'mod_pdfshield');
-                $note .= ' ' . get_string($available ? 'ownsetting' : 'ownsettingghostscript', 'mod_pdfshield', $own);
-            }
+            $note = $available
+                ? get_string('lockedbysite', 'mod_pdfshield',
+                    get_string($sitevalue ? 'settingon' : 'settingoff', 'mod_pdfshield'))
+                : get_string('pageimagesunavailable', 'mod_pdfshield');
             $mform->addElement('static', $name . 'note', '', $note);
         }
     }

@@ -83,8 +83,12 @@ function pdfshield_update_instance($data, $mform = null) {
     global $DB;
     $data->id = $data->instance;
     $data->timemodified = time();
-    $data->watermark = empty($data->watermark) ? 0 : 1;
-    $data->pageimages = empty($data->pageimages) ? 0 : 1;
+    // A setting teachers cannot change right now (locked by the administrator) keeps the activity's own value: the
+    // form only shows the site's. Once unlocked, the activity has its own choice again.
+    $current = $DB->get_record('pdfshield', ['id' => $data->id], 'watermark, pageimages', MUST_EXIST);
+    foreach (shield::LOCKABLE as $name) {
+        $data->$name = shield::fixed($name) ? (int) $current->$name : (empty($data->$name) ? 0 : 1);
+    }
     $DB->update_record('pdfshield', $data);
     pdfshield_save_file($data);
     \core_completion\api::update_completion_date_event($data->coursemodule, 'pdfshield', $data->id,

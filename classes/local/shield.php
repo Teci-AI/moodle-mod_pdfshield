@@ -80,6 +80,17 @@ class shield {
     }
 
     /**
+     * Whether teachers cannot change a setting right now: locked by the administrator, or (page images) Ghostscript
+     * is not set up. The activity keeps its own value meanwhile; it applies again once the setting is free.
+     *
+     * @param string $name watermark or pageimages
+     * @return bool
+     */
+    public static function fixed(string $name): bool {
+        return self::locked($name) || ($name === 'pageimages' && !self::ghostscript_available());
+    }
+
+    /**
      * Whether text search is allowed (site setting; never with page images).
      *
      * @return bool

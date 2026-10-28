@@ -81,14 +81,16 @@ class mod_pdfshield_mod_form extends moodleform_mod {
         $mform->addElement('advcheckbox', $name, get_string($name, 'mod_pdfshield'));
         $mform->addHelpButton($name, $name, 'mod_pdfshield');
         $mform->setDefault($name, (int) get_config('mod_pdfshield', $name));
-        if (!$available) {
-            $mform->setConstant($name, 0);
+        if (!$available || shield::locked($name)) {
+            // Shown fixed; saving keeps the activity's own value (pdfshield_update_instance).
+            $mform->setConstant($name, $available ? (int) get_config('mod_pdfshield', $name) : 0);
             $mform->freeze($name);
-            $mform->addElement('static', $name . 'note', '', get_string('pageimagesunavailable', 'mod_pdfshield'));
-        } else if (shield::locked($name)) {
-            $mform->setConstant($name, (int) get_config('mod_pdfshield', $name));
-            $mform->freeze($name);
-            $mform->addElement('static', $name . 'note', '', get_string('setbysite', 'mod_pdfshield'));
+            $note = get_string($available ? 'setbysite' : 'pageimagesunavailable', 'mod_pdfshield');
+            if (!empty($this->current->instance)) {
+                $own = get_string(empty($this->current->$name) ? 'settingoff' : 'settingon', 'mod_pdfshield');
+                $note .= ' ' . get_string($available ? 'ownsetting' : 'ownsettingghostscript', 'mod_pdfshield', $own);
+            }
+            $mform->addElement('static', $name . 'note', '', $note);
         }
     }
 

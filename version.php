@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_pdfshield';
-$plugin->version = 2026102800;
+$plugin->version = 2026102801;
 $plugin->release = '1.0.0-dev';
 $plugin->requires = 2024100700; // Moodle 4.5.
 $plugin->supported = [405, 503];

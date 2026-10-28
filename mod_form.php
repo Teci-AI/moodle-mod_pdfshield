@@ -54,6 +54,8 @@ class mod_pdfshield_mod_form extends moodleform_mod {
             'maxfiles' => 1,
             'subdirs' => 0,
             'maxbytes' => $this->get_course()->maxbytes ?? 0,
+            // A copy, never an alias: a referenced file could change after it was checked.
+            'return_types' => FILE_INTERNAL,
         ]);
         $mform->addHelpButton('files', 'files', 'mod_pdfshield');
         $mform->addRule('files', null, 'required', null, 'client');
@@ -118,13 +120,7 @@ class mod_pdfshield_mod_form extends moodleform_mod {
             $errors['files'] = get_string('required');
             return $errors;
         }
-        $file = reset($draft);
-        $handle = $file->get_content_file_handle();
-        $start = $handle ? fread($handle, 1024) : '';
-        if ($handle) {
-            fclose($handle);
-        }
-        if (strpos((string) $start, '%PDF-') === false) {
+        if (!shield::is_pdf(reset($draft))) {
             $errors['files'] = get_string('notpdf', 'mod_pdfshield');
         }
         return $errors;

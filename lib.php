@@ -233,6 +233,13 @@ function pdfshield_dndupload_register() {
  * @return int instance id
  */
 function pdfshield_dndupload_handle($uploadinfo) {
+    global $USER;
+    // The same check as the form: only a real PDF (the extension alone proves nothing).
+    $draft = get_file_storage()->get_area_files(context_user::instance($USER->id)->id, 'user', 'draft',
+        $uploadinfo->draftitemid, 'id', false);
+    if (!$draft || !shield::is_pdf(reset($draft))) {
+        throw new moodle_exception('notpdf', 'mod_pdfshield');
+    }
     $data = new stdClass();
     $data->course = $uploadinfo->course->id;
     $data->name = $uploadinfo->displayname;

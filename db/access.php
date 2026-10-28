@@ -38,8 +38,8 @@ $capabilities = [
     'mod/pdfshield:view' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
+        // Not guests by default: an anonymous visitor's watermark would only say "Guest user". Admins can allow it.
         'archetypes' => [
-            'guest' => CAP_ALLOW,
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,

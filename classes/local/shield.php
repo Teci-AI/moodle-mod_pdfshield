@@ -39,6 +39,21 @@ class shield {
     /** Default page image resolution (dots per inch). */
     public const DEFAULT_RESOLUTION = 150;
 
+    /** Most pages a document may have to be shown as images. */
+    public const MAX_PAGES = 2000;
+
+    /** Largest page image, in pixels (about A0 at 200 dpi); a bigger page is not shown. */
+    public const MAX_PIXELS = 40000000;
+
+    /** Seconds Ghostscript may take to count the pages. */
+    private const TIMEOUT_COUNT = 30;
+
+    /** Seconds Ghostscript may take to render one page. */
+    private const TIMEOUT_PAGE = 60;
+
+    /** Seconds Ghostscript may take to render every page (background task). */
+    private const TIMEOUT_ALL = 600;
+
     /**
      * The value that applies to an activity: the site's when the administrator locked the setting, else the activity's.
      *
@@ -80,7 +95,25 @@ class shield {
      */
     public static function ghostscript_available(): bool {
         global $CFG;
-        return !empty($CFG->pathtogs) && is_file($CFG->pathtogs) && is_executable($CFG->pathtogs);
+        return !empty($CFG->pathtogs) && is_file($CFG->pathtogs) && is_executable($CFG->pathtogs)
+            && function_exists('proc_open');
+    }
+
+    /**
+     * Whether a file is a PDF: it starts with "%PDF-" at its very first byte. Ghostscript decides how to read a file
+     * from its first bytes, so only such a file is ever given to it (anything else could be run as PostScript).
+     *
+     * @param stored_file $file
+     * @return bool
+     */
+    public static function is_pdf(stored_file $file): bool {
+        $handle = $file->get_content_file_handle();
+        if (!$handle) {
+            return false;
+        }
+        $start = fread($handle, 5);
+        fclose($handle);
+        return $start === '%PDF-';
     }
 
     /**
@@ -120,26 +153,28 @@ class shield {
      *
      * @param stdClass $instance the pdfshield record (updated when counted)
      * @param stored_file $file the activity's PDF
-     * @return int 0 when it cannot be counted
+     * @return int 0 when it cannot be counted, is not a PDF, or has more than MAX_PAGES pages (kept as -1, so it is not
+     *     tried again for the same PDF)
      */
     public static function page_count(stdClass $instance, stored_file $file): int {
         global $DB;
-        if ($instance->contenthash === $file->get_contenthash() && $instance->pagecount > 0) {
-            return (int) $instance->pagecount;
+        if ($instance->contenthash === $file->get_contenthash() && $instance->pagecount != 0) {
+            return max(0, (int) $instance->pagecount);
         }
         if (!self::ghostscript_available()) {
             return 0;
         }
         $pdf = self::temp_copy($file);
-        $count = self::ghostscript_page_count($pdf);
-        @unlink($pdf);
-        if ($count > 0) {
-            $instance->contenthash = $file->get_contenthash();
-            $instance->pagecount = $count;
-            $DB->update_record('pdfshield', (object) ['id' => $instance->id, 'contenthash' => $instance->contenthash,
-                'pagecount' => $count]);
+        $count = $pdf ? self::ghostscript_page_count($pdf) : 0;
+        if ($pdf) {
+            @unlink($pdf);
         }
-        return $count;
+        $stored = ($count > 0 && $count <= self::MAX_PAGES) ? $count : -1;
+        $instance->contenthash = $file->get_contenthash();
+        $instance->pagecount = $stored;
+        $DB->update_record('pdfshield', (object) ['id' => $instance->id, 'contenthash' => $instance->contenthash,
+            'pagecount' => $stored]);
+        return max(0, $stored);
     }
 
     /**
@@ -149,38 +184,48 @@ class shield {
      * @param context_module $context
      * @param stored_file $file the activity's PDF
      * @param int $page 1-based
-     * @return stored_file|null null when Ghostscript cannot render it
+     * @return stored_file|null null when it cannot be rendered (a page that failed is not tried again for the same
+     *     PDF), or when another request is rendering it and takes too long
      */
     public static function page_image(context_module $context, stored_file $file, int $page): ?stored_file {
         $fs = get_file_storage();
         $path = self::pages_path($file);
         $name = "page-{$page}.jpg";
+        $failed = "page-{$page}.failed";
         if ($image = $fs->get_file($context->id, 'mod_pdfshield', 'pages', 0, $path, $name)) {
             return $image;
         }
-        if (!self::ghostscript_available()) {
+        if (!self::ghostscript_available() || $fs->file_exists($context->id, 'mod_pdfshield', 'pages', 0, $path, $failed)) {
             return null;
         }
-        // Several readers may open the same page at once: render it once.
+        // Several readers may open the same page at once: render it once; without the lock, do not render at all.
         $lockfactory = \core\lock\lock_config::get_lock_factory('mod_pdfshield');
-        $lock = $lockfactory->get_lock("page-{$context->id}-" . $file->get_contenthash() . "-{$page}", 120);
+        $lock = $lockfactory->get_lock("page-{$context->id}-" . $file->get_contenthash() . "-{$page}",
+            self::TIMEOUT_PAGE + 10);
+        if (!$lock) {
+            return $fs->get_file($context->id, 'mod_pdfshield', 'pages', 0, $path, $name) ?: null;
+        }
+        $pdf = null;
         try {
             if ($image = $fs->get_file($context->id, 'mod_pdfshield', 'pages', 0, $path, $name)) {
                 return $image;
             }
-            $dir = make_request_directory();
             $pdf = self::temp_copy($file);
-            $out = "{$dir}/page.jpg";
-            self::ghostscript_render($pdf, "-dFirstPage={$page}", "-dLastPage={$page}", '-sOutputFile=' . $out);
-            @unlink($pdf);
-            if (!is_file($out) || !filesize($out)) {
-                return null;
+            $out = $pdf ? dirname($pdf) . '/page.jpg' : '';
+            $ok = $pdf && self::ghostscript_render($pdf, self::TIMEOUT_PAGE, "-dFirstPage={$page}", "-dLastPage={$page}",
+                '-sOutputFile=' . $out) && self::acceptable_image($out);
+            $image = $ok ? self::store_page($context, $path, $name, $out) : null;
+            if (!$image) {
+                self::store_page($context, $path, $failed, null);
             }
-            return $fs->create_file_from_pathname(self::page_record($context, $path, $name), $out);
+            return $image;
         } finally {
-            if ($lock) {
-                $lock->release();
+            if ($pdf) {
+                @unlink(dirname($pdf) . '/page.jpg');
+                @unlink($pdf);
+                @rmdir(dirname($pdf));
             }
+            $lock->release();
         }
     }
 
@@ -197,17 +242,27 @@ class shield {
         }
         $fs = get_file_storage();
         $path = self::pages_path($file);
-        $dir = make_request_directory();
         $pdf = self::temp_copy($file);
-        self::ghostscript_render($pdf, '-sOutputFile=' . $dir . '/page-%d.jpg');
-        @unlink($pdf);
+        if (!$pdf) {
+            return 0;
+        }
+        $dir = dirname($pdf);
         $rendered = 0;
-        foreach (glob("{$dir}/page-*.jpg") as $out) {
-            $name = basename($out);
-            if (filesize($out) && !$fs->file_exists($context->id, 'mod_pdfshield', 'pages', 0, $path, $name)) {
-                $fs->create_file_from_pathname(self::page_record($context, $path, $name), $out);
-                $rendered++;
+        try {
+            // Pages written before a timeout are kept; the others are rendered when first shown.
+            self::ghostscript_render($pdf, self::TIMEOUT_ALL, '-sOutputFile=' . $dir . '/page-%d.jpg');
+            foreach (glob("{$dir}/page-*.jpg") as $out) {
+                $name = basename($out);
+                if (self::acceptable_image($out)
+                        && !$fs->file_exists($context->id, 'mod_pdfshield', 'pages', 0, $path, $name)
+                        && self::store_page($context, $path, $name, $out)) {
+                    $rendered++;
+                }
+                @unlink($out);
             }
+        } finally {
+            @unlink($pdf);
+            @rmdir($dir);
         }
         return $rendered;
     }
@@ -334,12 +389,51 @@ class shield {
     }
 
     /**
-     * A temporary copy of the PDF for Ghostscript (works with any file storage, local or object storage).
+     * Stores a page image (or, with no file, the marker of a page that could not be rendered). Another request may have
+     * stored it meanwhile: that one is returned.
+     *
+     * @param context_module $context
+     * @param string $path
+     * @param string $name
+     * @param string|null $out the rendered image, or null for a failure marker
+     * @return stored_file|null
+     */
+    private static function store_page(context_module $context, string $path, string $name, ?string $out): ?stored_file {
+        $fs = get_file_storage();
+        $record = self::page_record($context, $path, $name);
+        try {
+            if ($out === null) {
+                return $fs->create_file_from_string(['mimetype' => 'text/plain'] + $record, '');
+            }
+            return $fs->create_file_from_pathname($record, $out);
+        } catch (\stored_file_creation_exception $e) {
+            return $fs->get_file($context->id, 'mod_pdfshield', 'pages', 0, $path, $name) ?: null;
+        }
+    }
+
+    /**
+     * Whether a rendered page can be kept: a JPEG, not empty, not bigger than MAX_PIXELS (decoding a huge image for
+     * the watermark on every request would exhaust the server's memory).
+     *
+     * @param string $out
+     * @return bool
+     */
+    private static function acceptable_image(string $out): bool {
+        $info = (is_file($out) && filesize($out)) ? @getimagesize($out) : false;
+        return $info && $info[2] === IMAGETYPE_JPEG && $info[0] * $info[1] <= self::MAX_PIXELS;
+    }
+
+    /**
+     * A temporary copy of the PDF for Ghostscript, in its own folder (works with any file storage, local or object
+     * storage). Only for a real PDF (see is_pdf).
      *
      * @param stored_file $file
-     * @return string path
+     * @return string|null path, or null when the file is not a PDF
      */
-    private static function temp_copy(stored_file $file): string {
+    private static function temp_copy(stored_file $file): ?string {
+        if (!self::is_pdf($file)) {
+            return null;
+        }
         $path = make_request_directory() . '/document.pdf';
         $file->copy_content_to($path);
         return $path;
@@ -349,17 +443,20 @@ class shield {
      * Runs Ghostscript to make JPEG page images, in safe mode (the PDF cannot read or write other files).
      *
      * @param string $pdf
+     * @param int $timeout seconds
      * @param string ...$args output and page range arguments
+     * @return bool whether it finished without error
      */
-    private static function ghostscript_render(string $pdf, string ...$args): void {
+    private static function ghostscript_render(string $pdf, int $timeout, string ...$args): bool {
         global $CFG;
-        $command = array_merge([$CFG->pathtogs, '-q', '-dSAFER', '-dBATCH', '-dNOPAUSE', '-sDEVICE=jpeg', '-dJPEGQ=85',
-            '-r' . self::resolution(), '-dTextAlphaBits=4', '-dGraphicsAlphaBits=4'], $args, [$pdf]);
-        exec(implode(' ', array_map('escapeshellarg', $command)) . ' 2>&1', $output, $status);
+        [$status, $output] = self::run(array_merge([$CFG->pathtogs, '-q', '-dSAFER', '-dBATCH', '-dNOPAUSE',
+            '-sDEVICE=jpeg', '-dJPEGQ=85', '-r' . self::resolution(), '-dTextAlphaBits=4', '-dGraphicsAlphaBits=4'],
+            $args, ['-f', $pdf]), $timeout);
         if ($status !== 0) {
-            debugging('PDF Shield: Ghostscript could not render the PDF: ' . implode(' ', array_slice($output, 0, 5)),
+            debugging('PDF Shield: Ghostscript could not render the PDF (' . $status . '): ' . substr($output, 0, 300),
                 DEBUG_DEVELOPER);
         }
+        return $status === 0;
     }
 
     /**
@@ -372,10 +469,49 @@ class shield {
         global $CFG;
         // A PostScript string: forward slashes work on every platform, and ( ) \ must be escaped.
         $psname = addcslashes(str_replace('\\', '/', $pdf), '()\\');
-        $command = [$CFG->pathtogs, '-q', '-dNODISPLAY', '-dSAFER', '--permit-file-read=' . $pdf, '-c',
-            "({$psname}) (r) file runpdfbegin pdfpagecount = quit"];
-        exec(implode(' ', array_map('escapeshellarg', $command)) . ' 2>&1', $output, $status);
-        $last = trim((string) end($output));
+        [$status, $output] = self::run([$CFG->pathtogs, '-q', '-dNODISPLAY', '-dSAFER', '--permit-file-read=' . $pdf,
+            '-c', "({$psname}) (r) file runpdfbegin pdfpagecount = quit"], self::TIMEOUT_COUNT);
+        $lines = preg_split('/\R/', trim($output));
+        $last = trim((string) end($lines));
         return ($status === 0 && ctype_digit($last)) ? (int) $last : 0;
+    }
+
+    /**
+     * Runs a program without a shell (its arguments are passed as they are, on every platform), stopping it after
+     * the time limit.
+     *
+     * @param array $command program and arguments
+     * @param int $timeout seconds
+     * @return array [exit status (-1 when stopped or not started), output and errors]
+     */
+    private static function run(array $command, int $timeout): array {
+        $process = proc_open($command, [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+        if (!is_resource($process)) {
+            return [-1, ''];
+        }
+        fclose($pipes[0]);
+        stream_set_blocking($pipes[1], false);
+        stream_set_blocking($pipes[2], false);
+        $output = '';
+        $deadline = microtime(true) + $timeout;
+        while (true) {
+            $output .= stream_get_contents($pipes[1]) . stream_get_contents($pipes[2]);
+            $status = proc_get_status($process);
+            if (!$status['running']) {
+                $output .= stream_get_contents($pipes[1]) . stream_get_contents($pipes[2]);
+                $code = $status['exitcode'];
+                break;
+            }
+            if (microtime(true) > $deadline) {
+                proc_terminate($process, 9);
+                $code = -1;
+                break;
+            }
+            usleep(20000);
+        }
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        proc_close($process);
+        return [$code, $output];
     }
 }

@@ -3,8 +3,9 @@
 A Moodle activity that shows a PDF in the course page without a download, print or "open file" button.
 
 - **The PDF is only sent to the viewer on the activity page**: a POST with the session key and the viewer's own
-  header, to signed-in users who may see the activity. A copied address does not work in another browser, after
-  logging out, or as a link. Nothing is cached. Teachers who can edit the activity still get their file as usual.
+  header, to signed-in users who may see the activity (not guests, unless an administrator gives the guest role
+  `mod/pdfshield:view`). A copied address does not work in another browser, after logging out, or as a link. The
+  browser is told not to cache it. Teachers who can edit the activity still get their file as usual.
 - **Watermark** (optional): the reader's name and the date faintly across every page, so a shared page can be traced.
 - **Pages as images** (optional): the server turns each page into an image with Ghostscript and sends only the images.
   The PDF itself never reaches the browser; its text cannot be selected. The watermark is drawn into each image on the
@@ -19,8 +20,13 @@ A Moodle activity that shows a PDF in the course page without a download, print 
 
 **What it cannot do:** nothing shown on a screen can be fully protected. Screenshots and photos of the screen are
 always possible; the watermark is there to discourage sharing them. In PDF mode the file reaches the browser (that is
-how it is drawn), so a technical user can still find it in memory; use pages as images when that matters. The pages
-are drawn as images, so screen readers cannot read the document's text.
+how it is drawn): any user who opens the browser's developer tools can save it, without the watermark, which the
+viewer draws on screen. Use pages as images when that matters: then only watermarked page images reach the browser.
+The pages are drawn as images, so screen readers cannot read the document's text.
+
+**Ghostscript** reads the PDFs teachers upload (pages as images only). Only files that start as a PDF are given to it,
+in its safe mode, without a shell, with a time limit and a size limit for page images. Keep Ghostscript up to date on
+the server: like Moodle's own assignment annotation, the plugin relies on it to handle untrusted PDFs safely.
 
 ## Settings
 
@@ -29,7 +35,7 @@ Site administration > Plugins > Activity modules > PDF Shield:
 | Setting | Default | |
 |---|---|---|
 | Watermark | off | Default for new activities. **Locked**: every activity follows the site value; teachers see it fixed. |
-| Show pages as images | off | Same, with its own **Locked** box. Needs Ghostscript (Site administration > Server > System paths). |
+| Show pages as images | off | Same, with its own **Locked** box. Needs Ghostscript (Site administration > Server > System paths). Documents of up to 2,000 pages; page images are kept on the server (without the watermark, which is drawn when a page is sent). |
 | Page image resolution | 150 dpi | 100, 150 or 200. |
 | Allow text search | off | Never in page-image mode. |
 

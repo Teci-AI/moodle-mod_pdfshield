@@ -43,7 +43,10 @@ class render_pages extends \core\task\adhoc_task {
         if (!$file || !shield::effective($instance, 'pageimages')) {
             return;
         }
-        shield::page_count($instance, $file);
+        if (!shield::page_count($instance, $file)) {
+            mtrace("PDF Shield: course module {$cmid} has no PDF Ghostscript can read; no page images.");
+            return;
+        }
         $rendered = shield::render_all_pages($context, $file);
         mtrace("PDF Shield: {$rendered} page images rendered for course module {$cmid}.");
     }

@@ -311,14 +311,14 @@ class shield {
         $height = imagesy($image);
         $font = $CFG->libdir . '/default.ttf';
         $size = max(10, (int) round($width / 42));
-        // Alpha 0 is opaque, 127 transparent: faint enough to read the page, clear enough to read the name.
-        $colour = imagecolorallocatealpha($image, 90, 90, 90, 98);
+        // Alpha 0 is opaque, 127 transparent: 112 is about 12% (as the viewer draws it), with wide gaps between names.
+        $colour = imagecolorallocatealpha($image, 90, 90, 90, 112);
         $angle = 30;
         if (is_readable($font) && function_exists('imagettftext')) {
             $box = imagettfbbox($size, 0, $font, $text);
             $textwidth = abs($box[2] - $box[0]);
-            $stepx = $textwidth + $size * 4;
-            $stepy = $size * 7;
+            $stepx = $textwidth + $size * 12;
+            $stepy = $size * 16;
             for ($y = -$height; $y < $height * 2; $y += $stepy) {
                 for ($x = -$width; $x < $width * 2; $x += $stepx) {
                     imagettftext($image, $size, $angle, (int) $x, (int) $y, $colour, $font, $text);

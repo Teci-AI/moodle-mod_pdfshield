@@ -63,6 +63,8 @@ function pdfshield_add_instance($data, $mform = null) {
     $data->timemodified = time();
     $data->watermark = empty($data->watermark) ? 0 : 1;
     $data->pageimages = empty($data->pageimages) ? 0 : 1;
+    $data->contenthash = ''; // Pages not counted yet.
+    $data->pagecount = 0;
     $data->id = $DB->insert_record('pdfshield', $data);
     // The context needs the instance id in the course module first.
     $DB->set_field('course_modules', 'instance', $data->id, ['id' => $data->coursemodule]);

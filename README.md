@@ -34,7 +34,7 @@ Site administration > Plugins > Activity modules > PDF Shield:
 
 | Setting | Default | |
 |---|---|---|
-| Watermark | off | Default for new activities. **Locked**: every activity follows the site value; teachers see it fixed. |
+| Watermark | off | Default for new activities. **Locked**: every activity follows the site value; teachers see their activity's own value, fixed, with a note saying what the site uses. Each activity keeps its own value, which applies again when unlocked. |
 | Show pages as images | off | Same, with its own **Locked** box. Needs Ghostscript (Site administration > Server > System paths). Documents of up to 2,000 pages; page images are kept on the server (without the watermark, which is drawn when a page is sent). |
 | Page image resolution | 150 dpi | 100, 150 or 200. |
 | Allow text search | off | Never in page-image mode. |

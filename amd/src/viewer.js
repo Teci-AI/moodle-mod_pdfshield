@@ -98,6 +98,29 @@ define(['core/str'], function(Str) {
     }
 
     /**
+     * PDF.js, an ES module: loaded by thirdparty/pdfjs/loader.js as a module script, which hands it over (an import()
+     * here would be turned into a RequireJS load by Moodle's build tool).
+     *
+     * @param {String} base URL of thirdparty/pdfjs/
+     * @returns {Promise<Object>} the PDF.js library
+     */
+    function loadPdfjs(base) {
+        if (window.modPdfshieldPdfjs) {
+            return Promise.resolve(window.modPdfshieldPdfjs);
+        }
+        return new Promise(function(resolve, reject) {
+            window.addEventListener('mod_pdfshield:pdfjs', function(e) {
+                resolve(e.detail);
+            }, {once: true});
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = base + 'loader.js';
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    /**
      * Width of text in a font family, for placing a match inside a run of text (relative widths only).
      *
      * @param {String} text
@@ -132,7 +155,7 @@ define(['core/str'], function(Str) {
             const base = M.cfg.wwwroot + '/mod/pdfshield/thirdparty/pdfjs/';
             const [response, pdfjs] = await Promise.all([
                 post('file.php', {id: this.cmid}),
-                import(base + 'pdf.min.js'),
+                loadPdfjs(base),
             ]);
             pdfjs.GlobalWorkerOptions.workerSrc = base + 'pdf.worker.min.js';
             this.pdfjs = pdfjs;

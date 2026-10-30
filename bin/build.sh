@@ -23,8 +23,8 @@ STAGE="$OUT/$NAME"
 rm -rf "$OUT"
 mkdir -p "$STAGE"
 rsync -a --exclude-from=.distignore ./ "$STAGE/"
-# amd/build must be the copy of amd/src (bin/amd.sh), or Moodle runs old code.
-cmp -s <(sed "s#^define(\['core/str'\]#define('mod_pdfshield/viewer', ['core/str']#" amd/src/viewer.js) amd/build/viewer.min.js   || { echo "amd/build/viewer.min.js is out of date: run bin/amd.sh" >&2; exit 1; }
+# amd/build is made by Moodle's grunt from amd/src (see README, Development).
+[ -s amd/build/viewer.min.js ] || { echo "amd/build/viewer.min.js is missing: build it with grunt amd" >&2; exit 1; }
 
 sed -i -E "s/^([$]plugin->release *= *)'[^']*';/\1'$RELEASE';/" "$STAGE/version.php"
 grep -q "^[$]plugin->release *= *'$RELEASE';" "$STAGE/version.php" || { echo "Release stamp failed" >&2; exit 1; }

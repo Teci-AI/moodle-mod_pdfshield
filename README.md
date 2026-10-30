@@ -49,8 +49,10 @@ assignment PDFs) and PHP's GD extension (for the watermark on images).
 
 ## Development
 
-- The viewer is `amd/src/viewer.js` in AMD `define()` form; `amd/build/viewer.min.js` is the same code with the
-  module name added: run `bin/amd.sh` after changing it (`bin/build.sh` refuses an out-of-date copy).
+- The viewer is `amd/src/viewer.js`; `amd/build/viewer.min.js` (and its map) is built by Moodle's grunt: with the
+  plugin in a Moodle 5.x checkout that has its Node packages installed, run `npx grunt amd` in `mod/pdfshield`.
+  PDF.js is loaded by `thirdparty/pdfjs/loader.js`, a module script, because grunt would turn an `import()` into a
+  RequireJS load.
 - `bin/build.sh` builds `build/mod_pdfshield-<version>.zip`; publishing a GitHub release (tag `v1.0.0`) builds it in
   GitHub Actions and attaches it to the release, for upload to the moodle.org plugins directory.
 - Updating PDF.js: see `thirdparty/pdfjs/readme_moodle.txt`.

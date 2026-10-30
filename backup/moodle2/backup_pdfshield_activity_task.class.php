@@ -30,7 +30,6 @@ require_once($CFG->dirroot . '/mod/pdfshield/backup/moodle2/backup_pdfshield_ste
  * Backs up one PDF Shield activity: its settings, description and PDF (page images are made again when needed).
  */
 class backup_pdfshield_activity_task extends backup_activity_task {
-
     /**
      * No particular settings.
      */
@@ -53,9 +52,15 @@ class backup_pdfshield_activity_task extends backup_activity_task {
     public static function encode_content_links($content) {
         global $CFG;
         $base = preg_quote($CFG->wwwroot, '/');
-        $content = preg_replace('/(' . $base . '\/mod\/pdfshield\/index.php\?id\=)([0-9]+)/', '$@PDFSHIELDINDEX*$2@$',
-            $content);
-        return preg_replace('/(' . $base . '\/mod\/pdfshield\/view.php\?id\=)([0-9]+)/', '$@PDFSHIELDVIEWBYID*$2@$',
-            $content);
+        $content = preg_replace(
+            '/(' . $base . '\/mod\/pdfshield\/index.php\?id\=)([0-9]+)/',
+            '$@PDFSHIELDINDEX*$2@$',
+            $content
+        );
+        return preg_replace(
+            '/(' . $base . '\/mod\/pdfshield\/view.php\?id\=)([0-9]+)/',
+            '$@PDFSHIELDVIEWBYID*$2@$',
+            $content
+        );
     }
 }

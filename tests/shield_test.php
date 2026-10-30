@@ -29,7 +29,6 @@ use mod_pdfshield\local\shield;
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(shield::class)]
 final class shield_test extends \advanced_testcase {
-
     /**
      * An activity with a PDF of the given content (or a 3-page PDF).
      *
@@ -119,8 +118,10 @@ final class shield_test extends \advanced_testcase {
         set_config('imageresolution', 100, 'mod_pdfshield');
         $this->assertNotNull(shield::page_image($context, $file, 1));
         shield::delete_old_pages($context, $file);
-        $paths = array_map(fn($f) => $f->get_filepath() . $f->get_filename(),
-            array_values(get_file_storage()->get_area_files($context->id, 'mod_pdfshield', 'pages', 0, 'id', false)));
+        $paths = array_map(
+            fn($f) => $f->get_filepath() . $f->get_filename(),
+            array_values(get_file_storage()->get_area_files($context->id, 'mod_pdfshield', 'pages', 0, 'id', false))
+        );
         $this->assertSame(['/' . $file->get_contenthash() . '-100/page-1.jpg'], $paths);
     }
 
@@ -136,8 +137,14 @@ final class shield_test extends \advanced_testcase {
         $this->assertEquals(-1, $DB->get_field('pdfshield', 'pagecount', ['id' => $instance->id]));
         $this->assertSame(0, shield::render_all_pages($context, $file));
         $this->assertNull(shield::page_image($context, $file, 1));
-        $this->assertTrue(get_file_storage()->file_exists($context->id, 'mod_pdfshield', 'pages', 0,
-            '/' . $file->get_contenthash() . '-150/', 'page-1.failed'));
+        $this->assertTrue(get_file_storage()->file_exists(
+            $context->id,
+            'mod_pdfshield',
+            'pages',
+            0,
+            '/' . $file->get_contenthash() . '-150/',
+            'page-1.failed'
+        ));
     }
 
     /**

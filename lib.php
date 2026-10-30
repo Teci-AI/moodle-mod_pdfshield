@@ -69,8 +69,12 @@ function pdfshield_add_instance($data, $mform = null) {
     // The context needs the instance id in the course module first.
     $DB->set_field('course_modules', 'instance', $data->id, ['id' => $data->coursemodule]);
     pdfshield_save_file($data);
-    \core_completion\api::update_completion_date_event($data->coursemodule, 'pdfshield', $data->id,
-        $data->completionexpected ?? null);
+    \core_completion\api::update_completion_date_event(
+        $data->coursemodule,
+        'pdfshield',
+        $data->id,
+        $data->completionexpected ?? null
+    );
     return $data->id;
 }
 
@@ -93,8 +97,12 @@ function pdfshield_update_instance($data, $mform = null) {
     }
     $DB->update_record('pdfshield', $data);
     pdfshield_save_file($data);
-    \core_completion\api::update_completion_date_event($data->coursemodule, 'pdfshield', $data->id,
-        $data->completionexpected ?? null);
+    \core_completion\api::update_completion_date_event(
+        $data->coursemodule,
+        'pdfshield',
+        $data->id,
+        $data->completionexpected ?? null
+    );
     return true;
 }
 
@@ -127,8 +135,14 @@ function pdfshield_save_file(stdClass $data): void {
     global $DB;
     $context = context_module::instance($data->coursemodule);
     if (!empty($data->files)) {
-        file_save_draft_area_files($data->files, $context->id, 'mod_pdfshield', 'content', 0,
-            ['subdirs' => 0, 'maxfiles' => 1]);
+        file_save_draft_area_files(
+            $data->files,
+            $context->id,
+            'mod_pdfshield',
+            'content',
+            0,
+            ['subdirs' => 0, 'maxfiles' => 1]
+        );
     }
     $file = shield::main_file($context);
     shield::delete_old_pages($context, $file);
@@ -241,8 +255,14 @@ function pdfshield_dndupload_register() {
 function pdfshield_dndupload_handle($uploadinfo) {
     global $USER;
     // The same check as the form: only a real PDF (the extension alone proves nothing).
-    $draft = get_file_storage()->get_area_files(context_user::instance($USER->id)->id, 'user', 'draft',
-        $uploadinfo->draftitemid, 'id', false);
+    $draft = get_file_storage()->get_area_files(
+        context_user::instance($USER->id)->id,
+        'user',
+        'draft',
+        $uploadinfo->draftitemid,
+        'id',
+        false
+    );
     if (!$draft || !shield::is_pdf(reset($draft))) {
         throw new moodle_exception('notpdf', 'mod_pdfshield');
     }
@@ -278,8 +298,11 @@ function pdfshield_page_type_list($pagetype, $parentcontext, $currentcontext) {
  * @param int $userid
  * @return \core_calendar\local\event\entities\action_interface|null
  */
-function mod_pdfshield_core_calendar_provide_event_action(calendar_event $event, \core_calendar\action_factory $factory,
-        $userid = 0) {
+function mod_pdfshield_core_calendar_provide_event_action(
+    calendar_event $event,
+    \core_calendar\action_factory $factory,
+    $userid = 0
+) {
     global $USER;
     $userid = $userid ?: $USER->id;
     $cm = get_fast_modinfo($event->courseid, $userid)->instances['pdfshield'][$event->instance];
@@ -291,8 +314,12 @@ function mod_pdfshield_core_calendar_provide_event_action(calendar_event $event,
     if ($data->completionstate != COMPLETION_INCOMPLETE) {
         return null;
     }
-    return $factory->create_instance(get_string('view'), new moodle_url('/mod/pdfshield/view.php', ['id' => $cm->id]),
-        1, true);
+    return $factory->create_instance(
+        get_string('view'),
+        new moodle_url('/mod/pdfshield/view.php', ['id' => $cm->id]),
+        1,
+        true
+    );
 }
 
 /**

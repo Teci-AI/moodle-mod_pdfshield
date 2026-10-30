@@ -32,7 +32,6 @@ use mod_pdfshield\local\shield;
  * The activity form: name, description, one PDF, and the protection settings.
  */
 class mod_pdfshield_mod_form extends moodleform_mod {
-
     /**
      * Form definition.
      */
@@ -88,8 +87,11 @@ class mod_pdfshield_mod_form extends moodleform_mod {
             $mform->setConstant($name, $own);
             $mform->freeze($name);
             $note = $available
-                ? get_string('lockedbysite', 'mod_pdfshield',
-                    get_string($sitevalue ? 'settingon' : 'settingoff', 'mod_pdfshield'))
+                ? get_string(
+                    'lockedbysite',
+                    'mod_pdfshield',
+                    get_string($sitevalue ? 'settingon' : 'settingoff', 'mod_pdfshield')
+                )
                 : get_string('pageimagesunavailable', 'mod_pdfshield');
             $mform->addElement('static', $name . 'note', '', $note);
         }
@@ -102,8 +104,14 @@ class mod_pdfshield_mod_form extends moodleform_mod {
      */
     public function data_preprocessing(&$defaultvalues) {
         $draftitemid = file_get_submitted_draft_itemid('files');
-        file_prepare_draft_area($draftitemid, $this->context ? $this->context->id : null, 'mod_pdfshield', 'content', 0,
-            ['subdirs' => 0, 'maxfiles' => 1]);
+        file_prepare_draft_area(
+            $draftitemid,
+            $this->context ? $this->context->id : null,
+            'mod_pdfshield',
+            'content',
+            0,
+            ['subdirs' => 0, 'maxfiles' => 1]
+        );
         $defaultvalues['files'] = $draftitemid;
     }
 

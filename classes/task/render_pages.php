@@ -27,7 +27,6 @@ use mod_pdfshield\local\shield;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class render_pages extends \core\task\adhoc_task {
-
     /**
      * Renders the pages, if the activity still exists and still shows pages as images.
      */

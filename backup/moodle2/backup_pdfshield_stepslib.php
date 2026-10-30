@@ -26,15 +26,17 @@
  * The activity record, its description files and its PDF.
  */
 class backup_pdfshield_activity_structure_step extends backup_activity_structure_step {
-
     /**
      * Structure of pdfshield.xml.
      *
      * @return backup_nested_element
      */
     protected function define_structure() {
-        $pdfshield = new backup_nested_element('pdfshield', ['id'],
-            ['name', 'intro', 'introformat', 'watermark', 'pageimages', 'timemodified']);
+        $pdfshield = new backup_nested_element(
+            'pdfshield',
+            ['id'],
+            ['name', 'intro', 'introformat', 'watermark', 'pageimages', 'timemodified']
+        );
         $pdfshield->set_source_table('pdfshield', ['id' => backup::VAR_ACTIVITYID]);
         $pdfshield->annotate_files('mod_pdfshield', 'intro', null);
         $pdfshield->annotate_files('mod_pdfshield', 'content', null);

@@ -26,7 +26,6 @@
  * Creates PDF Shield activities with a PDF, for tests.
  */
 class mod_pdfshield_generator extends testing_module_generator {
-
     /**
      * Creates an activity. Without 'pdf' (PDF content), a PDF with the given pages ('pages', default 3) is made.
      *

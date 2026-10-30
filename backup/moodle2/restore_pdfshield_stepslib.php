@@ -26,7 +26,6 @@
  * The activity record, its description files and its PDF.
  */
 class restore_pdfshield_activity_structure_step extends restore_activity_structure_step {
-
     /**
      * Paths in pdfshield.xml.
      *

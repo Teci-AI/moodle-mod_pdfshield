@@ -26,9 +26,12 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($ADMIN->fulltree) {
-    $setting = new admin_setting_configcheckbox('mod_pdfshield/watermark',
+    $setting = new admin_setting_configcheckbox(
+        'mod_pdfshield/watermark',
         new lang_string('settings_watermark', 'mod_pdfshield'),
-        new lang_string('settings_watermark_desc', 'mod_pdfshield'), 0);
+        new lang_string('settings_watermark_desc', 'mod_pdfshield'),
+        0
+    );
     $setting->set_locked_flag_options(admin_setting_flag::ENABLED, false);
     $settings->add($setting);
 
@@ -36,17 +39,27 @@ if ($ADMIN->fulltree) {
     if (!\mod_pdfshield\local\shield::ghostscript_available()) {
         $description .= '<br><strong>' . get_string('pageimagesunavailableadmin', 'mod_pdfshield') . '</strong>';
     }
-    $setting = new admin_setting_configcheckbox('mod_pdfshield/pageimages',
-        new lang_string('settings_pageimages', 'mod_pdfshield'), $description, 0);
+    $setting = new admin_setting_configcheckbox(
+        'mod_pdfshield/pageimages',
+        new lang_string('settings_pageimages', 'mod_pdfshield'),
+        $description,
+        0
+    );
     $setting->set_locked_flag_options(admin_setting_flag::ENABLED, false);
     $settings->add($setting);
 
-    $settings->add(new admin_setting_configselect('mod_pdfshield/imageresolution',
+    $settings->add(new admin_setting_configselect(
+        'mod_pdfshield/imageresolution',
         new lang_string('settings_imageresolution', 'mod_pdfshield'),
         new lang_string('settings_imageresolution_desc', 'mod_pdfshield'),
-        \mod_pdfshield\local\shield::DEFAULT_RESOLUTION, [100 => '100', 150 => '150', 200 => '200']));
+        \mod_pdfshield\local\shield::DEFAULT_RESOLUTION,
+        [100 => '100', 150 => '150', 200 => '200']
+    ));
 
-    $settings->add(new admin_setting_configcheckbox('mod_pdfshield/allowsearch',
+    $settings->add(new admin_setting_configcheckbox(
+        'mod_pdfshield/allowsearch',
         new lang_string('settings_allowsearch', 'mod_pdfshield'),
-        new lang_string('settings_allowsearch_desc', 'mod_pdfshield'), 0));
+        new lang_string('settings_allowsearch_desc', 'mod_pdfshield'),
+        0
+    ));
 }

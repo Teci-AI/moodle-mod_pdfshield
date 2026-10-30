@@ -50,8 +50,11 @@ $table->attributes['class'] = 'generaltable mod_index';
 $table->head = [get_string('name'), get_string('moduleintro')];
 foreach ($instances as $instance) {
     $cm = get_fast_modinfo($course)->get_cm($instance->coursemodule);
-    $link = html_writer::link(new moodle_url('/mod/pdfshield/view.php', ['id' => $cm->id]), format_string($instance->name),
-        $cm->visible ? [] : ['class' => 'dimmed']);
+    $link = html_writer::link(
+        new moodle_url('/mod/pdfshield/view.php', ['id' => $cm->id]),
+        format_string($instance->name),
+        $cm->visible ? [] : ['class' => 'dimmed']
+    );
     $table->data[] = [$link, format_module_intro('pdfshield', $instance, $cm->id)];
 }
 echo html_writer::table($table);

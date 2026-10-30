@@ -30,7 +30,6 @@ require_once($CFG->dirroot . '/mod/pdfshield/backup/moodle2/restore_pdfshield_st
  * Restores one PDF Shield activity.
  */
 class restore_pdfshield_activity_task extends restore_activity_task {
-
     /**
      * No particular settings.
      */

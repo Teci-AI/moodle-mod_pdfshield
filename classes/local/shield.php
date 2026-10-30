@@ -29,7 +29,6 @@ use stored_file;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class shield {
-
     /** Settings an activity has, whose site value wins when the administrator locks it. */
     public const LOCKABLE = ['watermark', 'pageimages'];
 
@@ -134,8 +133,14 @@ class shield {
      * @return stored_file|null
      */
     public static function main_file(context_module $context): ?stored_file {
-        $files = get_file_storage()->get_area_files($context->id, 'mod_pdfshield', 'content', 0, 'sortorder DESC, id ASC',
-            false);
+        $files = get_file_storage()->get_area_files(
+            $context->id,
+            'mod_pdfshield',
+            'content',
+            0,
+            'sortorder DESC, id ASC',
+            false
+        );
         return $files ? reset($files) : null;
     }
 
@@ -211,8 +216,10 @@ class shield {
         }
         // Several readers may open the same page at once: render it once; without the lock, do not render at all.
         $lockfactory = \core\lock\lock_config::get_lock_factory('mod_pdfshield');
-        $lock = $lockfactory->get_lock("page-{$context->id}-" . $file->get_contenthash() . "-{$page}",
-            self::TIMEOUT_PAGE + 10);
+        $lock = $lockfactory->get_lock(
+            "page-{$context->id}-" . $file->get_contenthash() . "-{$page}",
+            self::TIMEOUT_PAGE + 10
+        );
         if (!$lock) {
             return $fs->get_file($context->id, 'mod_pdfshield', 'pages', 0, $path, $name) ?: null;
         }
@@ -223,8 +230,13 @@ class shield {
             }
             $pdf = self::temp_copy($file);
             $out = $pdf ? dirname($pdf) . '/page.jpg' : '';
-            $ok = $pdf && self::ghostscript_render($pdf, self::TIMEOUT_PAGE, "-dFirstPage={$page}", "-dLastPage={$page}",
-                '-sOutputFile=' . $out) && self::acceptable_image($out);
+            $ok = $pdf && self::ghostscript_render(
+                $pdf,
+                self::TIMEOUT_PAGE,
+                "-dFirstPage={$page}",
+                "-dLastPage={$page}",
+                '-sOutputFile=' . $out
+            ) && self::acceptable_image($out);
             $image = $ok ? self::store_page($context, $path, $name, $out) : null;
             if (!$image) {
                 self::store_page($context, $path, $failed, null);
@@ -264,9 +276,11 @@ class shield {
             self::ghostscript_render($pdf, self::TIMEOUT_ALL, '-sOutputFile=' . $dir . '/page-%d.jpg');
             foreach (glob("{$dir}/page-*.jpg") as $out) {
                 $name = basename($out);
-                if (self::acceptable_image($out)
+                if (
+                    self::acceptable_image($out)
                         && !$fs->file_exists($context->id, 'mod_pdfshield', 'pages', 0, $path, $name)
-                        && self::store_page($context, $path, $name, $out)) {
+                        && self::store_page($context, $path, $name, $out)
+                ) {
                     $rendered++;
                 }
                 @unlink($out);
@@ -460,12 +474,17 @@ class shield {
      */
     private static function ghostscript_render(string $pdf, int $timeout, string ...$args): bool {
         global $CFG;
-        [$status, $output] = self::run(array_merge([$CFG->pathtogs, '-q', '-dSAFER', '-dBATCH', '-dNOPAUSE',
+        [$status, $output] = self::run(array_merge(
+            [$CFG->pathtogs, '-q', '-dSAFER', '-dBATCH', '-dNOPAUSE',
             '-sDEVICE=jpeg', '-dJPEGQ=85', '-r' . self::resolution(), '-dTextAlphaBits=4', '-dGraphicsAlphaBits=4'],
-            $args, ['-f', $pdf]), $timeout);
+            $args,
+            ['-f', $pdf]
+        ), $timeout);
         if ($status !== 0) {
-            debugging('PDF Shield: Ghostscript could not render the PDF (' . $status . '): ' . substr($output, 0, 300),
-                DEBUG_DEVELOPER);
+            debugging(
+                'PDF Shield: Ghostscript could not render the PDF (' . $status . '): ' . substr($output, 0, 300),
+                DEBUG_DEVELOPER
+            );
         }
         return $status === 0;
     }

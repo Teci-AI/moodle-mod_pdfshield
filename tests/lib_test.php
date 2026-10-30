@@ -43,7 +43,6 @@ require_once($CFG->libdir . '/completionlib.php');
 #[\PHPUnit\Framework\Attributes\CoversFunction('pdfshield_view')]
 #[\PHPUnit\Framework\Attributes\CoversFunction('mod_pdfshield_core_calendar_provide_event_action')]
 final class lib_test extends \advanced_testcase {
-
     /**
      * A course with completion enabled, as admin.
      *
@@ -106,7 +105,7 @@ final class lib_test extends \advanced_testcase {
         global $DB, $USER;
         $course = $this->course();
         set_config('watermark', 1, 'mod_pdfshield');
-        $drop = function(string $content) use ($course, $DB, $USER) {
+        $drop = function (string $content) use ($course, $DB, $USER) {
             $draft = file_get_unused_draft_itemid();
             get_file_storage()->create_file_from_string(['contextid' => \context_user::instance($USER->id)->id,
                 'component' => 'user', 'filearea' => 'draft', 'itemid' => $draft, 'filepath' => '/',
@@ -138,15 +137,23 @@ final class lib_test extends \advanced_testcase {
         $this->setUser($student);
         $sink = $this->redirectEvents();
         foreach ([$viewed, $manual] as $act) {
-            pdfshield_view($DB->get_record('pdfshield', ['id' => $act->id]), $course, $modinfo->get_cm($act->cmid),
-                \context_module::instance($act->cmid));
+            pdfshield_view(
+                $DB->get_record('pdfshield', ['id' => $act->id]),
+                $course,
+                $modinfo->get_cm($act->cmid),
+                \context_module::instance($act->cmid)
+            );
         }
         $events = array_filter($sink->get_events(), fn($e) => $e instanceof event\course_module_viewed);
         $this->assertCount(2, $events);
-        $this->assertEquals(COMPLETION_COMPLETE,
-            $completion->get_data($modinfo->get_cm($viewed->cmid), false, $student->id)->completionstate);
-        $this->assertEquals(COMPLETION_INCOMPLETE,
-            $completion->get_data($modinfo->get_cm($manual->cmid), false, $student->id)->completionstate);
+        $this->assertEquals(
+            COMPLETION_COMPLETE,
+            $completion->get_data($modinfo->get_cm($viewed->cmid), false, $student->id)->completionstate
+        );
+        $this->assertEquals(
+            COMPLETION_INCOMPLETE,
+            $completion->get_data($modinfo->get_cm($manual->cmid), false, $student->id)->completionstate
+        );
     }
 
     /**
@@ -162,8 +169,11 @@ final class lib_test extends \advanced_testcase {
         $event = $DB->get_record('event', ['modulename' => 'pdfshield', 'instance' => $act->id,
             'eventtype' => \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED]);
         $this->assertEquals($expected, $event->timestart);
-        $action = mod_pdfshield_core_calendar_provide_event_action(\calendar_event::load($event->id),
-            new \core_calendar\action_factory(), $student->id);
+        $action = mod_pdfshield_core_calendar_provide_event_action(
+            \calendar_event::load($event->id),
+            new \core_calendar\action_factory(),
+            $student->id
+        );
         $this->assertNotNull($action);
         $this->assertStringContainsString('/mod/pdfshield/view.php?id=' . $act->cmid, $action->get_url()->out(false));
     }

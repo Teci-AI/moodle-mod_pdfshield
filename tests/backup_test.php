@@ -37,7 +37,6 @@ require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 #[\PHPUnit\Framework\Attributes\CoversClass(\backup_pdfshield_activity_structure_step::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\restore_pdfshield_activity_structure_step::class)]
 final class backup_test extends \advanced_testcase {
-
     /**
      * The activity, its settings and its PDF are copied into another course.
      */
@@ -51,13 +50,25 @@ final class backup_test extends \advanced_testcase {
             'watermark' => 1, 'pageimages' => 0]);
         $file = shield::main_file(\context_module::instance($act->cmid));
 
-        $bc = new \backup_controller(\backup::TYPE_1ACTIVITY, $act->cmid, \backup::FORMAT_MOODLE,
-            \backup::INTERACTIVE_NO, \backup::MODE_IMPORT, $USER->id);
+        $bc = new \backup_controller(
+            \backup::TYPE_1ACTIVITY,
+            $act->cmid,
+            \backup::FORMAT_MOODLE,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_IMPORT,
+            $USER->id
+        );
         $backupid = $bc->get_backupid();
         $bc->execute_plan();
         $bc->destroy();
-        $rc = new \restore_controller($backupid, $target->id, \backup::INTERACTIVE_NO, \backup::MODE_IMPORT, $USER->id,
-            \backup::TARGET_EXISTING_ADDING);
+        $rc = new \restore_controller(
+            $backupid,
+            $target->id,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_IMPORT,
+            $USER->id,
+            \backup::TARGET_EXISTING_ADDING
+        );
         $rc->execute_precheck();
         $rc->execute_plan();
         $rc->destroy();

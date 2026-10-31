@@ -27,7 +27,6 @@ use mod_pdfshield\local\shield;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \mod_pdfshield\local\shield
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(shield::class)]
 final class shield_test extends \advanced_testcase {
     /**
      * An activity with a PDF of the given content (or a 3-page PDF).

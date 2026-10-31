@@ -101,9 +101,9 @@
 
 /* Printing shows a note instead of the document. */
 @media print {
-    .mod-pdfshield-toolbar,
-    .mod-pdfshield-pages {
-        display: none !important;
+    .mod-pdfshield-viewer .mod-pdfshield-toolbar,
+    .mod-pdfshield-viewer .mod-pdfshield-pages {
+        display: none;
     }
 
     .mod-pdfshield-noprint {

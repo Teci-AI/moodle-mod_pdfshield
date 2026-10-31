@@ -37,11 +37,6 @@ require_once($CFG->libdir . '/completionlib.php');
  * @covers     ::pdfshield_view
  * @covers     ::mod_pdfshield_core_calendar_provide_event_action
  */
-#[\PHPUnit\Framework\Attributes\CoversFunction('pdfshield_update_instance')]
-#[\PHPUnit\Framework\Attributes\CoversFunction('pdfshield_delete_instance')]
-#[\PHPUnit\Framework\Attributes\CoversFunction('pdfshield_dndupload_handle')]
-#[\PHPUnit\Framework\Attributes\CoversFunction('pdfshield_view')]
-#[\PHPUnit\Framework\Attributes\CoversFunction('mod_pdfshield_core_calendar_provide_event_action')]
 final class lib_test extends \advanced_testcase {
     /**
      * A course with completion enabled, as admin.

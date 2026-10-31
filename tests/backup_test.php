@@ -34,8 +34,6 @@ require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
  * @covers     \backup_pdfshield_activity_structure_step
  * @covers     \restore_pdfshield_activity_structure_step
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(\backup_pdfshield_activity_structure_step::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(\restore_pdfshield_activity_structure_step::class)]
 final class backup_test extends \advanced_testcase {
     /**
      * The activity, its settings and its PDF are copied into another course.

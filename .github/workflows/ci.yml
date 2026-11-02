@@ -1,7 +1,9 @@
-# Every push and pull request: PHP syntax on every supported PHP version, and a test build of the zip.
+# Every push to a branch and every pull request: PHP syntax on every supported PHP version, and a test build of the
+# zip. Not on tags: a version tag runs the Release workflow, on a commit CI has already checked.
 name: CI
 on:
   push:
+    branches: ['**']
   pull_request:
 
 jobs:

@@ -1,5 +1,9 @@
 # Changes
 
+## 1.0.1 (2 November 2026)
+
+- Adds `db/upgrade.php` (no upgrade steps yet), which the Moodle Marketplace requires in every activity plugin.
+
 ## 1.0.0 (2 November 2026)
 
 First release.

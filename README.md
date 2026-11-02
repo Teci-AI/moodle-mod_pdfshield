@@ -53,6 +53,9 @@ assignment PDFs) and PHP's GD extension (for the watermark on images).
   plugin in a Moodle 5.x checkout that has its Node packages installed, run `npx grunt amd` in `mod/pdfshield`.
   PDF.js is loaded by `thirdparty/pdfjs/loader.js`, a module script, because grunt would turn an `import()` into a
   RequireJS load.
-- `bin/build.sh` builds `build/mod_pdfshield-<version>.zip`; publishing a GitHub release (tag `v1.0.0`) builds it in
-  GitHub Actions and attaches it to the release, for upload to the moodle.org plugins directory.
+- `bin/build.sh` builds `build/mod_pdfshield-<version>.zip`.
+- Releasing: raise `$plugin->version` and set `$plugin->release` in `version.php`, add the version's section to
+  `CHANGES.md`, then `git tag v1.0.1 && git push origin v1.0.1`. GitHub Actions checks both, builds the zip and
+  publishes the release with the notes from `CHANGES.md` and the zip attached, for upload to the moodle.org plugins
+  directory.
 - Updating PDF.js: see `thirdparty/pdfjs/readme_moodle.txt`.

@@ -1,15 +1,18 @@
-# Publishing a GitHub release (tag v1.0.1) builds the zip and attaches it to the release. Raise $plugin->version in
-# version.php before tagging. The zip is what goes to the moodle.org plugins directory (uploaded there by hand).
+# Pushing a version tag publishes the release: git tag v1.0.1 && git push origin v1.0.1
+# Before tagging: raise $plugin->version and set $plugin->release to the same version in version.php, and add its
+# section to CHANGES.md ("## 1.0.1 (date)"). The job refuses a tag that does not match either. It builds the zip, takes
+# the release notes from CHANGES.md and publishes the GitHub release with the zip attached (a tag such as v1.1.0-beta.1
+# makes a pre-release). The zip is what goes to the moodle.org plugins directory (uploaded there by hand).
 name: Release
 on:
-  release:
-    types: [published]
+  push:
+    tags: ['v*']
 
 permissions:
   contents: write
 
 jobs:
-  zip:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -18,9 +21,20 @@ jobs:
           php-version: '8.4'
           coverage: none
           tools: none
+      - name: The tag matches version.php and has its CHANGES.md section
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          release=$(sed -n "s/^[$]plugin->release *= *'\([^']*\)';.*/\1/p" version.php)
+          [ "$release" = "$version" ] || { echo "::error::version.php says release '$release', the tag says '$version'"; exit 1; }
+          awk -v v="$version" '/^## /{p = ($2 == v)} p' CHANGES.md | tail -n +2 > notes.md
+          [ -s notes.md ] || { echo "::error::CHANGES.md has no '## $version' section"; exit 1; }
       - id: build
-        run: echo "zip=$(bash bin/build.sh "${{ github.event.release.tag_name }}" | tail -1)" >> "$GITHUB_OUTPUT"
-      - name: Attach the zip to the release
+        run: echo "zip=$(bash bin/build.sh "$GITHUB_REF_NAME" | tail -1)" >> "$GITHUB_OUTPUT"
+      - name: Publish the release with the zip
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${{ github.event.release.tag_name }}" "${{ steps.build.outputs.zip }}" --clobber
+        run: |
+          prerelease=""
+          case "$GITHUB_REF_NAME" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" "${{ steps.build.outputs.zip }}" --verify-tag $prerelease \
+            --title "PDF Shield ${GITHUB_REF_NAME#v}" --notes-file notes.md

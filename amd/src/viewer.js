@@ -17,8 +17,8 @@
  * PDF Shield viewer: draws the document's pages on canvases, without any download, print or open control.
  *
  * Two sources: the PDF itself, drawn by PDF.js (thirdparty/pdfjs, script execution not supported by PDF.js 6), or page
- * images made on the server (the PDF never reaches the browser). Both are fetched by POST with the session key and the
- * viewer's header: a copied address does not work elsewhere. Pages are drawn when they come into view and released
+ * images made on the server (the PDF never reaches the browser). Both are fetched by POST with the session key: a
+ * copied address does not work elsewhere. Pages are drawn when they come into view and released
  * when far away. In PDF mode the watermark is drawn on each page here; page images already carry it.
  *
  * @module     mod_pdfshield/viewer
@@ -32,7 +32,7 @@ define(['core/str'], function(Str) {
     const IMAGE_CACHE = 40;
 
     /**
-     * A request from the viewer: POST, session key in the body, the viewer's header.
+     * A request from the viewer: POST, session key in the body.
      *
      * @param {String} script file.php or page.php
      * @param {Object} params
@@ -43,7 +43,6 @@ define(['core/str'], function(Str) {
         return fetch(M.cfg.wwwroot + '/mod/pdfshield/' + script, {
             method: 'POST',
             body: body,
-            headers: {'X-PDFShield': '1'},
             credentials: 'same-origin',
             cache: 'no-store',
         }).then(function(response) {

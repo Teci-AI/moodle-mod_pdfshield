@@ -3,6 +3,11 @@
 ## 1.0.1 (2 November 2026)
 
 - Adds `db/upgrade.php` (no upgrade steps yet), which the Moodle Marketplace requires in every activity plugin.
+- The viewer's requests are checked with Moodle's own functions (a POST with the session key) instead of reading PHP's
+  request data directly; a request without a session key is refused cleanly instead of showing an error page.
+- Boilerplate and copyright in the PDF.js loader; the licence (GNU GPL v3 or later, PDF.js under Apache 2.0) stated in
+  the README.
+- Tested on MySQL 8.4 and MariaDB 11.4 as well as PostgreSQL, and with developer debugging on.
 
 ## 1.0.0 (2 November 2026)
 

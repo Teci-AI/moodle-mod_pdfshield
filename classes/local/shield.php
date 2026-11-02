@@ -32,9 +32,6 @@ class shield {
     /** Settings an activity has, whose site value wins when the administrator locks it. */
     public const LOCKABLE = ['watermark', 'pageimages'];
 
-    /** Header the viewer sends with every request: a page typed in the address bar or linked from elsewhere has none. */
-    public const REQUEST_HEADER = 'X-PDFShield';
-
     /** Default page image resolution (dots per inch). */
     public const DEFAULT_RESOLUTION = 150;
 
@@ -350,15 +347,16 @@ class shield {
     }
 
     /**
-     * Stops any request that does not come from the viewer on the activity page: it must be a POST with the session
-     * key and the viewer's header, so a copied address does not work in another browser, after logout, or as a link.
+     * Stops any request that does not come from the viewer on the activity page: it must be a POST carrying the
+     * session key, so a copied address does not work in another browser, after logout, or as a link.
      */
     public static function require_viewer_request(): void {
-        $header = 'HTTP_' . strtoupper(str_replace('-', '_', self::REQUEST_HEADER));
-        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST' || empty($_SERVER[$header])) {
+        if (data_submitted() === false) {
             self::refuse(400);
         }
-        if (!confirm_sesskey()) {
+        // Read here, not by confirm_sesskey() alone: it throws (an error page) when the key is missing.
+        $sesskey = optional_param('sesskey', '', PARAM_RAW);
+        if ($sesskey === '' || !confirm_sesskey($sesskey)) {
             self::refuse(403);
         }
     }

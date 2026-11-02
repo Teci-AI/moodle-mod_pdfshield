@@ -2,8 +2,7 @@
 
 A Moodle activity that shows a PDF in the course page without a download, print or "open file" button.
 
-- **The PDF is only sent to the viewer on the activity page**: a POST with the session key and the viewer's own
-  header, to signed-in users who may see the activity (not guests, unless an administrator gives the guest role
+- **The PDF is only sent to the viewer on the activity page**: a POST with the session key, to signed-in users who may see the activity (not guests, unless an administrator gives the guest role
   `mod/pdfshield:view`). A copied address does not work in another browser, after logging out, or as a link. The
   browser is told not to cache it. Teachers who can edit the activity still get their file as usual.
 - **Watermark** (optional): the reader's name and the date faintly across every page, so a shared page can be traced.
@@ -42,9 +41,14 @@ Site administration > Plugins > Activity modules > PDF Shield:
 When pages as images apply to an activity but Ghostscript is missing, the activity shows a notice instead of sending
 the PDF.
 
+## Licence
+
+GNU GPL v3 or later (see `LICENSE`). PDF.js, in `thirdparty/pdfjs`, is under the Apache License 2.0
+(declared in `thirdpartylibs.xml`).
+
 ## Requirements
 
-Moodle 4.5 LTS to 5.x, PHP 8.1 or later. For pages as images: Ghostscript (the same one Moodle uses to annotate
+Moodle 4.5 LTS to 5.3, PHP 8.1 or later, MySQL, MariaDB or PostgreSQL. For pages as images: Ghostscript (the same one Moodle uses to annotate
 assignment PDFs) and PHP's GD extension (for the watermark on images).
 
 ## Development

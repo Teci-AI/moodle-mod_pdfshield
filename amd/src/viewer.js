@@ -22,7 +22,7 @@
  * when far away. In PDF mode the watermark is drawn on each page here; page images already carry it.
  *
  * @module     mod_pdfshield/viewer
- * @copyright  2026 Teci
+ * @copyright  2026 Teci {@link https://www.teci.ai}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['core/str'], function(Str) {

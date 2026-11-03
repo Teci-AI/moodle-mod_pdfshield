@@ -18,7 +18,7 @@
  * module script. It imports PDF.js as the ES module it is and hands it over, so the viewer itself has no import(),
  * which Moodle's build tool would turn into a RequireJS load.
  *
- * @copyright  2026 Teci
+ * @copyright  2026 Teci {@link https://www.teci.ai}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import * as pdfjsLib from './pdf.min.js';

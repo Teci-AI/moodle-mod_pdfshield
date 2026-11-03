@@ -20,7 +20,7 @@ namespace mod_pdfshield\event;
  * The list of a course's PDF Shield activities was viewed.
  *
  * @package    mod_pdfshield
- * @copyright  2026 Teci
+ * @copyright  2026 Teci {@link https://www.teci.ai}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_module_instance_list_viewed extends \core\event\course_module_instance_list_viewed {

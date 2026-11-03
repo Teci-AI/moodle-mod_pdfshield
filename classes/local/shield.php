@@ -25,7 +25,7 @@ use stored_file;
  * the checks every request from the viewer goes through.
  *
  * @package    mod_pdfshield
- * @copyright  2026 Teci
+ * @copyright  2026 Teci {@link https://www.teci.ai}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class shield {

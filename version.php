@@ -18,15 +18,15 @@
  * PDF Shield: version information.
  *
  * @package    mod_pdfshield
- * @copyright  2026 Teci
+ * @copyright  2026 Teci {@link https://www.teci.ai}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_pdfshield';
-$plugin->version = 2026110201;
-$plugin->release = '1.0.1';
+$plugin->version = 2026110300;
+$plugin->release = '1.0.2';
 $plugin->requires = 2024100700; // Moodle 4.5.
 $plugin->supported = [405, 503];
 $plugin->maturity = MATURITY_STABLE;

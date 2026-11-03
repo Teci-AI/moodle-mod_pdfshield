@@ -23,7 +23,7 @@ use mod_pdfshield\local\shield;
  *
  * @package    mod_pdfshield
  * @category   test
- * @copyright  2026 Teci
+ * @copyright  2026 Teci {@link https://www.teci.ai}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \mod_pdfshield\local\shield
  */

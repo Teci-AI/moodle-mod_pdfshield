@@ -29,7 +29,7 @@ require_once($CFG->libdir . '/completionlib.php');
  *
  * @package    mod_pdfshield
  * @category   test
- * @copyright  2026 Teci
+ * @copyright  2026 Teci {@link https://www.teci.ai}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     ::pdfshield_update_instance
  * @covers     ::pdfshield_delete_instance

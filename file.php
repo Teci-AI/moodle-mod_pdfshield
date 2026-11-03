@@ -19,7 +19,7 @@
  * someone who may view the activity; never when the activity shows pages as images.
  *
  * @package    mod_pdfshield
- * @copyright  2026 Teci
+ * @copyright  2026 Teci {@link https://www.teci.ai}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

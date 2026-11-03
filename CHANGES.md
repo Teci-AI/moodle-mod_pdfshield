@@ -1,5 +1,9 @@
 # Changes
 
+## 1.0.2 (3 November 2026)
+
+- Copyright lines now give the maintainer's website. No change in behaviour.
+
 ## 1.0.1 (2 November 2026)
 
 - Adds `db/upgrade.php` (no upgrade steps yet), which the Moodle Marketplace requires in every activity plugin.

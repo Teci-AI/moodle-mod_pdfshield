@@ -29,7 +29,7 @@ require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
  *
  * @package    mod_pdfshield
  * @category   test
- * @copyright  2026 Teci
+ * @copyright  2026 Teci {@link https://www.teci.ai}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \backup_pdfshield_activity_structure_step
  * @covers     \restore_pdfshield_activity_structure_step
